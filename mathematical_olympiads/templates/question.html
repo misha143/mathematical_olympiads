@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ question }}{% endblock %}
+{% block content %}
+    {% include 'nav.html' %}
+    <div class="container">
+
+        {% if user.is_staff %}
+            <p style="margin-top: 1rem">
+                <a class="btn btn-danger btn-lg btn-block" href="/admin/app/question/{{ pk_question }}/change/" role="button"><i class="bi bi-brush"></i> Редактировать вопрос</a>
+                <a class="btn btn-danger btn-lg btn-block" href="/admin/app/result/?question__id__exact={{ pk_question }}" role="button"><i class="bi bi-bar-chart"></i> Результаты вопроса</a>
+                <a class="btn btn-danger btn-lg btn-block" href="/admin/app/question/{{ pk_question }}/delete/" role="button"><i class="bi bi-trash"></i> Удалить вопрос</a>
+            </p>
+        {% else %}
+
+        {% endif %}
+    </div>
+    <div class="container">
+        <div class="row">
+            {% include "sidebar_question.html" %}
+            <div class="col-md-9">
+                <div class="card mb-3 shadow-sm">
+                    {% if question.image_url %}
+                        <img class="card-img-top" src="{{ question.image_url }}" style="width: 100%; height: 10.9rem; object-fit: cover;">
+                    {% endif %}
+                    <div class="card-body">
+                        <h4 class="card-title">{{ question.title }}</h4>
+                        <p class="card-text">{{ question.text }}</p>
+                        {% if question.video_yt_url %}
+                            <iframe width="245" height="139" src="https://www.youtube.com/embed/{{ question.video_yt_url }}" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                            <br><br>
+                        {% endif %}
+                        {% if is_done %}
+
+                            {% if not question.is_input_question %}
+                            <div class="btn-group-vertical">
+                                {% for ans in ans_list %}
+                                    <button type="button" class="btn {% if ans.correct %}btn-success{% else %}btn-danger{% endif %}" style="text-align: left" disabled>{{ ans.text }}</button>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+<form>
+
+  <div class="form-group">
+    <label for="text_ans">Ваш ответ:</label>
+    <textarea class="form-control" id="text_ans" rows="3" name="user_input_text" disabled placeholder="{{ user_answer }}"></textarea>
+  </div>
+
+</form>
+                            {% endif %}
+
+                        {% else %}
+
+                        {% if not question.is_input_question %}
+                            <div class="btn-group-vertical">
+                                {% for ans in ans_list %}
+                                    <a class="btn btn-light" href="{% url 'question_pass' quiz.pk question.pk ans.pk %}" role="button" style="text-align: left">{{ ans.text }}</a>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+<!--                        вставить активную форму с приемом ответов-->
+
+
+
+                        <form action="{% url 'question' quiz.pk question.pk %}" method="post">
+{% csrf_token %}
+  <div class="form-group">
+    <label for="text">Ваш ответ:</label>
+    <textarea class="form-control" id="text" rows="3" name="user_input_text"></textarea>
+  </div>
+      <button type="submit" class="btn btn-outline-danger">Отправить</button>
+</form>
+
+
+
+                            {% endif %}
+
+                        {% endif %}
+                        {% if is_done %}
+
+                        {% if not question.is_input_question %}
+                    <br><br>
+                    {% endif %}
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle"></i> {{ question.additional_information }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if is_done %}
+                    {% if question_advice|length != 0 %}
+
+                        <div class="card shadow-sm" style="margin-bottom: 8px">
+                            <div class="card-body">
+                                <h4 class="card-title">Пройдите ещё: {{ question_advice.0.title }}</h4><a class="card-link" href="{% url 'question' quiz.pk question_advice.0.pk %}">Пройти</a>
+                            </div>
+                        </div>
+                        <br>
+                    {% else %}
+
+                        <div class="card shadow-sm" style="margin-bottom: 8px">
+                            <div class="card-body">
+                                <h4 class="card-title">Поздравляем! 🥳🎈​🎉</h4>
+                                <p class="card-text">Вы завершили квест <a href="{% url 'quiz' quiz.pk %}" >«‎{{ quiz }}»</a>
+                                {% if quiz_advice|length != 0 %}
+                                    <br>Для вас стал доступен новый квест <a href="{% url 'quiz' quiz_advice.0.pk %}" >«{{ quiz_advice.0.title }}»</a>
+                                {% endif %}
+                                </p>
+
+                            </div>
+                        </div>
+                        <br>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}
