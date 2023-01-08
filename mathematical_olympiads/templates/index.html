@@ -9,7 +9,7 @@
 
 
     <div class="container mb-4">
-        <h3>👋 {{ user.first_name }} {{ user.last_name }}</h3>
+        <h3>👋 {{ user.first_name }}</h3>
         {% if user.is_staff %}
 
             <p style="margin-top: 1rem">
@@ -19,7 +19,7 @@
             </p>
         {% else %}
 
-            <p>Проходи квесты и знакомься с компанией!</p>
+            <p>Приветствуем вас на олимпиаде!</p>
         {% endif %}
     </div>
 
