@@ -24,24 +24,85 @@
     </div>
 
     <div class="container">
+<!--         олимпиада 1 прошла-->
+<!--        {{ olimp1_finished.0 }}-->
+<!--        прямо сейчас проводится олимпиада 1-->
+<!--        {{ olimp1_work.0 }}-->
+<!--        ждёт начала-->
+<!--        {{ olimp1_waiting_to_begin.0.end_time | date:"c" }}-->
 
-        {% if done_quizzes|length == 0 and not_done_quizzes|length == 0 %}
-            <h2>На сайте нет квестов.</h2>
-        {% endif %}
+        {% if not olimp1_finished and not olimp1_work and not olimp1_waiting_to_begin %}
+            <h2>На сайте нет олимпиад 1 тура.</h2>
+        {% else %}
+        <h4>1 тур</h4>
 
-
-        {% if not_done_quizzes|length != 0 %}
-
-            <h4>Пройдите квест 👇</h4>
-
-            <div class="card shadow-sm" style="margin-bottom: 1rem">
-                <img class="card-img-top" src="{{ not_done_quizzes.0.image_url }}" style="width: 100%; height: 12rem; object-fit: cover;">
-                <div class="card-body">
-                    <h5 class="card-title">{{ not_done_quizzes.0.title }}</h5>
-                    <a href="{% url 'quiz' not_done_quizzes.0.pk %}" class="btn btn-outline-danger"><i class="bi bi-unlock-fill"></i> Перейти к квесту</a>
+        <!--         олимпиада 1 прошла-->
+            {% if olimp1_finished %}
+                <div class="card shadow-sm" style="margin-bottom: 1rem">
+                    <img class="card-img-top" src="{{ olimp1_finished.0.image_url }}" style="width: 100%; height: 12rem; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ olimp1_finished.0.title }}</h5>
+                        <p class="card-text">{{ olimp1_finished.0.description }}</p>
+                        <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Олимпиада завершена</button>
+                    </div>
                 </div>
-            </div>
+            {% endif %}
+
+        <!--        прямо сейчас проводится олимпиада 1-->
+            {% if olimp1_work %}
+                <div class="card shadow-sm" style="margin-bottom: 1rem">
+                    <img class="card-img-top" src="{{ olimp1_work.0.image_url }}" style="width: 100%; height: 12rem; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ olimp1_work.0.title }}</h5>
+                        <p class="card-text">{{ olimp1_work.0.description }}</p>
+                        <a href="" class="btn btn-outline-primary"><i class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
+<!--                        }    % url 'olimp' olimp1_work.0.pk %      {               -->
+                    </div>
+                </div>
+            {% endif %}
+
+        <!--        ждёт начала-->
+            {% if olimp1_waiting_to_begin %}
+                <div class="card shadow-sm" style="margin-bottom: 1rem">
+                    <img class="card-img-top" src="{{ olimp1_waiting_to_begin.0.image_url }}" style="width: 100%; height: 12rem; object-fit: cover;">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ olimp1_waiting_to_begin.0.title }}</h5>
+                        <p class="card-text">{{ olimp1_waiting_to_begin.0.description }}</p>
+                        <button type="button" class="btn btn-outline-primary" disabled id="count_open"></button>
+                    </div>
+                </div>
+
+
+                <script>
+
+                let time = {{ olimp1_waiting_to_begin_seconds }};
+                const countDownEl = document.getElementById("count_open");
+                setInterval(updateCountdown,1000);
+                function updateCountdown() {
+                if (time != -1){
+                let hours = Math.floor(time / 3600);
+                let minutes = Math.floor((time - hours*3600) / 60);
+                let seconds = Math.floor((time - hours*3600) - minutes * 60);
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                countDownEl.innerHTML = `<i class="bi bi-calendar-event"></i> Откроется через ${hours}:${minutes}:${seconds}`;
+                time--;
+                }
+                else{
+                window.location.reload();
+                }
+                }
+                </script>
+
+            {% endif %}
+
         {% endif %}
+
+
+
 
 
 
@@ -90,6 +151,8 @@
 
 
     </div>
+
+
 
 
 {% endblock %}
