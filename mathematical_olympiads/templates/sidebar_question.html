@@ -1,74 +1,46 @@
 <div class="col-md-3 mb-3">
 
-    <a class="btn btn-outline-secondary mb-3" href="{% url 'quiz' quiz.pk %}" role="button"><i class="bi bi-arrow-90deg-up"></i> Назад к квесту</a>
+    <a class="btn btn-outline-secondary mb-3" href="{% url 'index' %}" role="button"><i
+            class="bi bi-arrow-90deg-up"></i> На главную</a>
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <div class="h4">
-                {% if is_done %}
-                    Прошли {% if is_correct %}<i class="bi bi-emoji-smile-upside-down" style="color: #16c60c"></i>{% else %}<i class="bi bi-emoji-smile" style="color: #6c757d"></i>{% endif %}
-<!--                ✅-->
-<!--                ✔-->
-                {% else %}
-                    Не прошли <i class="bi bi-emoji-neutral" style="color: grey"></i>
-<!--                ❌-->
-                {% endif %}
+            <div class="h5">
+                {{ olympiad }}
             </div>
-            {% if is_done %}
-                <div class="h6 text-muted">
-                    {% if is_correct == 1 %}
-                        Решено <span style="color: #16c60c">верно</span>
-                    {% elif is_correct == 0 %}
-                        Решено не верно
-                    {% endif %}
-                    {% if not question.is_input_question %}
-                    <br>Ваш ответ: {{ user_answer }}
-                    {% endif %}
-                </div>
-            {% endif %}
+
         </div>
         <ul class="list-group list-group-flush">
             <li class="list-group-item">
-                <div class="h6 text-muted">
-
-                    {% if count_of_people_done == 0 %}
-                        Никто не прошёл квест.<br>Вы будете первым.
-                    {% else %}
-                        Всего {% if count_of_people_done == 1 %}прошёл{% else %}прошли{% endif %} {{ count_of_people_done }}
-                        {% if count_of_people_done|get_digit:1 == 1 and count_of_people_done != 11 %}
-                            человек
-                        {% elif count_of_people_done|get_digit:1 == 0 or count_of_people_done|get_digit:1 >= 5 %}
-                            человек
-                        {% elif count_of_people_done >= 11 and count_of_people_done <= 19 %}
-                            человек
-                        {% else %}
-                            человека
-                        {% endif %}
-                        <br>
-
-                        {% if percent_of_done_correct == 0 %}
-                            Все решили не верно
-                        {% elif percent_of_done_correct == 100 %}
-                            Все решили верно
-                        {% else %}
-                            Верно решили {{ percent_of_done_correct }}%
-                        {% endif %}
-
-                    {% endif %}
-                </div>
+                Закроется через <span class="badge badge-info" id="count_close"></span>
             </li>
-            {% if count_of_people_done > 0 %}
-                <li class="list-group-item">
-                    <div class="h6 text-muted">
-                        Уже прошли:
-                        <br>
-                        {% for group_name, cnt_people in common_groups %}
-                            {{ group_name }}: {{ cnt_people }} чел.
-                            <br>
-                        {% endfor %}
-                    </div>
-                </li>
-            {% endif %}
+            <li class="list-group-item">
+                1234
+            </li>
         </ul>
     </div>
 </div>
+
+<script>
+    let time = {{olimp_work_to_end_seconds}};
+    const countDownEl = document.getElementById("count_close");
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    function updateCountdown() {
+        if (time != -1) {
+            let hours = Math.floor(time / 3600);
+            let minutes = Math.floor((time - hours * 3600) / 60);
+            let seconds = Math.floor((time - hours * 3600) - minutes * 60);
+
+            hours = hours < 10 ? "0" + hours : hours;
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            countDownEl.innerHTML = `${hours}:${minutes}:${seconds}`;
+            time--;
+        } else {
+            window.location.replace("http://stackoverflow.com");
+        }
+    }
+</script>
