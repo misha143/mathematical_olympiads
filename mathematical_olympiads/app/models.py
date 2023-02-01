@@ -1,3 +1,5 @@
+import math
+
 from django.db import models
 from django.contrib.auth import get_user_model
 
@@ -20,8 +22,6 @@ class Olympiad(models.Model):
     created = models.DateTimeField(auto_now_add=True, verbose_name="Олимпиада создана")
     start_time = models.DateTimeField(verbose_name="Время старта олимпиады")
     end_time = models.DateTimeField(verbose_name="Время окончания олимпиады")
-
-
 
     class Meta:
         verbose_name = 'Олимпиада'
@@ -63,7 +63,7 @@ class Answer(models.Model):
     answer = models.FloatField(verbose_name="Ответ")
     is_correct = models.BooleanField(verbose_name="Правильно ответили?")
     answer_created = models.DateTimeField(verbose_name="Когда ответили? (UTC+5)", auto_now_add=True, blank=True,
-                                            null=True)
+                                          null=True)
 
     class Meta:
         verbose_name = 'Ответ'
@@ -75,3 +75,25 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"{self.task}"
+
+
+class Timetrack(models.Model):
+    olympiad = models.ForeignKey(Olympiad, on_delete=models.CASCADE, verbose_name="Олимпиада")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="Команда")
+    start_time = models.DateTimeField(verbose_name="Когда приступили к выполнению? (UTC+5)", auto_now_add=True,
+                                      blank=True,
+                                      null=True)
+    end_time = models.DateTimeField(verbose_name="Когда закончили выполнять? (UTC+5)",
+                                    blank=True,
+                                    null=True)
+
+    class Meta:
+        verbose_name = 'Время прохождения'
+        verbose_name_plural = 'Время прохождения'
+        unique_together = (
+            'olympiad',
+            'user',
+        )
+
+    def __str__(self):
+        return f"{math.ceil((self.end_time - self.start_time).total_seconds())}"

@@ -13,11 +13,12 @@
     {% if user.is_staff %}
 
     <p style="margin-top: 1rem">
-        <a class="btn btn-danger btn-lg btn-block" href="/admin/" role="button"><i class="bi bi-box-arrow-in-right"></i>
+        <a class="btn btn-primary btn-lg btn-block" href="/admin/" role="button"><i class="bi bi-box-arrow-in-right"></i>
             Перейти в админ-панель</a>
-
-        <a class="btn btn-danger btn-lg btn-block" href="/admin/app/quiz/add/" role="button"><i class="bi bi-plus"></i>
-            Добавить квест</a>
+{% if olimp1_finished %}
+        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 1 %}" role="button"><i class="bi bi-download"></i></i>
+            Скачать результаты 1 тура</a>
+        {% endif %}
     </p>
     {% else %}
 
@@ -61,18 +62,23 @@
         <div class="card-body">
             <h5 class="card-title">{{ olimp1_work.0.title }}</h5>
             <p class="card-text">{{ olimp1_work.0.description }}<br>
-                <div>Закроется через <span class="badge badge-info" id="count_close"></span></div>
+                <div id="count_close"></div>
             </p>
+            {% if olimp1_work.0.end_time == timetracker.end_time or timetracker == None %}
 
-            {% if first_task %}
-            <!--                        есть первое задание в олимпиаде-->
-            <a href="{% url 'task' olimp1_work.0.pk first_task.pk %}" class="btn btn-outline-primary"><i
-                    class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
+                {% if first_task %}
+                <!--                        есть первое задание в олимпиаде-->
+                <a href="{% url 'task' olimp1_work.0.pk first_task.pk %}" class="btn btn-outline-primary"><i
+                        class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
+
+                {% else %}
+                <!--                 нет задания       -->
+                <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
+                    0 заданий</button>
+                {% endif %}
 
             {% else %}
-            <!--                 нет задания       -->
-            <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
-                0 заданий</button>
+                <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно завершили олимпиаду</button>
             {% endif %}
             <!--                        }    % url 'olimp' olimp1_work.0.pk %      {               -->
         </div>
@@ -95,7 +101,11 @@
                 minutes = minutes < 10 ? "0" + minutes : minutes;
                 seconds = seconds < 10 ? "0" + seconds : seconds;
 
-                countDownEl.innerHTML = `${hours}:${minutes}:${seconds}`;
+                if (time > 300) {
+                    countDownEl.innerHTML = `Закроется через <span class="badge badge-info" >${hours}:${minutes}:${seconds}</span>`;
+                  } else {
+                    countDownEl.innerHTML = `Закроется через <span class="badge badge-danger" >${hours}:${minutes}:${seconds}</span>`;
+                  }
                 time--;
             } else {
                 window.location.reload();
@@ -118,7 +128,7 @@
 
 
     <script>
-        let time = {{olimp1_waiting_to_begin_seconds}};
+        let time = {{ olimp1_waiting_to_begin_seconds }};
         const countDownEl = document.getElementById("count_open");
         updateCountdown();
         setInterval(updateCountdown, 1000);

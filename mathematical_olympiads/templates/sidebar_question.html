@@ -1,46 +1,102 @@
 <div class="col-md-3 mb-3">
 
-    <a class="btn btn-outline-secondary mb-3" href="{% url 'index' %}" role="button"><i
-            class="bi bi-arrow-90deg-up"></i> На главную</a>
+  <a class="btn btn-outline-secondary mb-3" href="{% url 'index' %}" role="button"><i class="bi bi-arrow-90deg-up"></i>
+    На главную</a>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="h5">
-                {{ olympiad }}
-            </div>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="h5">
+        {{ olympiad }}
+      </div>
 
-        </div>
-        <ul class="list-group list-group-flush">
-            <li class="list-group-item">
-                Закроется через <span class="badge badge-info" id="count_close"></span>
-            </li>
-            <li class="list-group-item">
-                1234
-            </li>
-        </ul>
     </div>
+    <ul class="list-group list-group-flush">
+      <li class="list-group-item" id="count_close">
+
+      </li>
+
+
+      <li class="list-group-item">
+
+        <!-- Button trigger modal -->
+
+        <button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#exampleModal">Завершить
+          олимпиаду досрочно</button>
+
+
+
+        <!-- Modal -->
+        <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+          aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Завершить «{{ olympiad }}»?</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body">
+                Подтвердите завершение олимпиады.
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Продолжить решение</button>
+                <a class="btn btn-danger" href="{% url 'olympiad_early_completion' olympiad.pk %}" role="button">Завершить</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+      </li>
+      <li class="list-group-item">
+        {% for t in all_tasks %}
+
+          {{ forloop.counter }}.
+
+        {% if task == t %}
+            <a href="{% url 'task' olympiad.pk t.pk %}">➤ {{ t }}</a>
+            {% else %}
+            <a href="{% url 'task' olympiad.pk t.pk %}">{{ t }}</a>
+          {% endif %}
+
+          {% if t in answered_tasks %}
+            <i class="bi bi-check-square"></i>
+          {% endif %}
+
+          {% if not forloop.last %}
+          <br>
+          {% endif %}
+
+        {% endfor %}
+      </li>
+    </ul>
+  </div>
 </div>
 
 <script>
-    let time = {{olimp_work_to_end_seconds}};
-    const countDownEl = document.getElementById("count_close");
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
+  let time = {{olimp_work_to_end_seconds}};
+  const countDownEl = document.getElementById("count_close");
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
 
-    function updateCountdown() {
-        if (time != -1) {
-            let hours = Math.floor(time / 3600);
-            let minutes = Math.floor((time - hours * 3600) / 60);
-            let seconds = Math.floor((time - hours * 3600) - minutes * 60);
+  function updateCountdown() {
+    if (time != -1) {
+      let hours = Math.floor(time / 3600);
+      let minutes = Math.floor((time - hours * 3600) / 60);
+      let seconds = Math.floor((time - hours * 3600) - minutes * 60);
 
-            hours = hours < 10 ? "0" + hours : hours;
-            minutes = minutes < 10 ? "0" + minutes : minutes;
-            seconds = seconds < 10 ? "0" + seconds : seconds;
-
-            countDownEl.innerHTML = `${hours}:${minutes}:${seconds}`;
-            time--;
-        } else {
-            window.location.replace("http://stackoverflow.com");
-        }
+      hours = hours < 10 ? "0" + hours : hours;
+      minutes = minutes < 10 ? "0" + minutes : minutes;
+      seconds = seconds < 10 ? "0" + seconds : seconds;
+      if (time > 300) {
+        countDownEl.innerHTML = `Закроется через <span class="badge badge-info" >${hours}:${minutes}:${seconds}</span>`;
+      } else {
+        countDownEl.innerHTML = `Закроется через <span class="badge badge-danger" >${hours}:${minutes}:${seconds}</span>`;
+      }
+      time--;
+    } else {
+      window.location.replace("{% url 'index' %}");
     }
+  }
 </script>

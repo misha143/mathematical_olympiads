@@ -10,7 +10,7 @@ import csv
 from collections import Counter
 from django.http import HttpResponse, HttpResponseNotFound
 
-from .models import Olympiad, Task, Answer
+from .models import Olympiad, Task, Answer, Timetrack
 
 User = get_user_model()
 
@@ -25,6 +25,7 @@ def index(request):
                                           start_time__lt=timezone.now())
     olimp1_work_to_end_seconds = 0
     first_task = 0
+    timetracker = 0
     if olimp1_work:
         olimp1_work_to_end_seconds = math.ceil(
             (getattr(olimp1_work[0], 'end_time') - timezone.now()).total_seconds()) + 2
@@ -32,6 +33,8 @@ def index(request):
             first_task = Task.objects.filter(olympiad__in=olimp1_work).order_by("pk")[0:1].get()
         except:
             pass
+
+        timetracker = Timetrack.objects.filter(olympiad__in=olimp1_work, user__username=request.user.username).first()
 
     # олимпиада 1 ждёт начала
     olimp1_waiting_to_begin = Olympiad.objects.filter(olympiad_level='1', start_time__gt=timezone.now())
@@ -46,6 +49,7 @@ def index(request):
         "olimp1_work": olimp1_work,
         "olimp1_work_to_end_seconds": olimp1_work_to_end_seconds,
         "first_task": first_task,
+        "timetracker": timetracker,
 
         "olimp1_waiting_to_begin": olimp1_waiting_to_begin,
         "olimp1_waiting_to_begin_seconds": olimp1_waiting_to_begin_seconds,
@@ -54,17 +58,122 @@ def index(request):
 
 @login_required
 def task_view(request, pk_olympiad, pk_task):
-    olympiad = get_object_or_404(Olympiad, pk=pk_olympiad)
-    if not (timezone.now() > getattr(olympiad, 'start_time') and timezone.now() < getattr(olympiad, 'end_time')):
-        return redirect('index')
-
+    user = get_object_or_404(User, username=request.user.username)
     task = get_object_or_404(Task, pk=pk_task)
+    if request.method == 'POST':
+        # пробуем найти существующий
+        ans = Answer.objects.filter(user=user, task=task).first()
+        # если нашли, то ставим новый ответ
+        if ans:
+            ans.answer = float(request.POST['user_input_number'])
+            ans.is_correct = task.correct_answer == ans.answer
+            ans.answer_created = timezone.now()
+            ans.save()
+        # если нет в базе
+        else:
+            Answer.objects.create(task=task, user=user, answer=float(request.POST['user_input_number']),
+                                  is_correct=task.correct_answer == float(request.POST['user_input_number']))
 
-    olimp_work_to_end_seconds = math.ceil(
-        (getattr(olympiad, 'end_time') - timezone.now()).total_seconds()) + 2
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        olympiad = get_object_or_404(Olympiad, pk=pk_olympiad)
 
-    return render(request, 'task.html', {
-        "olympiad":olympiad,
-        "task": task,
-        "olimp_work_to_end_seconds": olimp_work_to_end_seconds,
-    })
+        # пробуем найти существующий отсчёт времени
+        timetracker = Timetrack.objects.filter(olympiad=olympiad, user=user).first()
+        # если нет в базе
+        if not timetracker:
+            Timetrack.objects.create(olympiad=olympiad, user=user, end_time=olympiad.end_time)
+
+        task = get_object_or_404(Task, pk=pk_task)
+        if not (timezone.now() > getattr(olympiad, 'start_time') and timezone.now() < getattr(olympiad, 'end_time')) \
+                or task.olympiad != olympiad:
+            return redirect('index')
+
+        olimp_work_to_end_seconds = math.ceil(
+            (getattr(olympiad, 'end_time') - timezone.now()).total_seconds()) + 2
+
+        # все задания олимпиады
+        all_tasks = Task.objects.filter(olympiad=olympiad).order_by("pk")
+
+        # задания олимпиады на которые ответил человек
+        answered_tasks = []
+        for t in all_tasks:
+            if Answer.objects.filter(user=user, task=t).exists():
+                answered_tasks.append(t)
+
+        # пробуем найти существующий ответ
+        answer = Answer.objects.filter(user=user, task=task).first()
+
+        return render(request, 'task.html', {
+            "olympiad": olympiad,
+            "task": task,
+            "answered_tasks": answered_tasks,
+            "all_tasks": all_tasks,
+            "answer": answer,
+            "olimp_work_to_end_seconds": olimp_work_to_end_seconds,
+        })
+
+
+@login_required
+def olympiad_early_completion(request, pk_olympiad):
+    user = get_object_or_404(User, username=request.user.username)
+    olympiad = get_object_or_404(Olympiad, pk=pk_olympiad)
+
+    timetracker = Timetrack.objects.filter(olympiad=olympiad, user=user).first()
+    timetracker.end_time = timezone.now()
+    timetracker.save()
+
+    return redirect('index')
+
+
+@login_required
+def get_csv(request, pk_olympiad):
+    if request.user.is_staff:
+        now = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
+        response = HttpResponse(
+            content_type='text/csv',
+            headers={'Content-Disposition': f'attachment; filename="Results_{now}.csv"'},
+        )
+
+        writer = csv.writer(response)
+
+        olympiad = get_object_or_404(Olympiad, olympiad_level=pk_olympiad)
+
+        # все задания олимпиады
+        all_tasks = Task.objects.filter(olympiad=olympiad)
+
+        all_answers = Answer.objects.filter(task__in=all_tasks)
+
+        print(all_answers)
+
+
+        writer.writerow(
+            ['Олимпиада', 'Название команды', 'Сколько секунд потратили на решение', 'Сколько баллов заработали',
+             'Всего баллов'])
+        for result in data:
+            group_name = ''
+            for group in result.user.groups.all():
+                group_name = group.name
+
+            quiz_name = ''
+            for q in all_quizzes:
+                if result.question in q.question.all():
+                    quiz_name = q.title
+                    break
+
+            result_correct = ''
+            if result.is_correct == True:
+                result_correct = 'Да'
+            elif result.is_correct == False:
+                result_correct = 'Нет'
+            else:
+                result_correct = 'Не оценено'
+
+            time_done = result.time_result_done + timedelta(hours=5)
+            writer.writerow(
+                [result.user.first_name, result.user.last_name, group_name, quiz_name, result.question, result.answer,
+                 result_correct, time_done.strftime("%Y-%m-%d %H:%M:%S")])
+
+        return response
+    else:
+        return HttpResponseNotFound("Экспорт данных может делать только администратор")
