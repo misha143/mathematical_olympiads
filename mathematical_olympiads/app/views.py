@@ -144,35 +144,21 @@ def get_csv(request, pk_olympiad):
 
         all_answers = Answer.objects.filter(task__in=all_tasks)
 
-        print(all_answers)
+        unique_users = set()
 
+        for a in all_answers:
+            unique_users.add(a.user)
 
         writer.writerow(
             ['Олимпиада', 'Название команды', 'Сколько секунд потратили на решение', 'Сколько баллов заработали',
-             'Всего баллов'])
-        for result in data:
-            group_name = ''
-            for group in result.user.groups.all():
-                group_name = group.name
+             'Всего баллов в олимпиаде', '% правильно решённых заданий'])
+        for u in unique_users:
+            _sec_for_solve = Timetrack.objects.filter(olympiad=olympiad, user=u).first()
+            _number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
 
-            quiz_name = ''
-            for q in all_quizzes:
-                if result.question in q.question.all():
-                    quiz_name = q.title
-                    break
-
-            result_correct = ''
-            if result.is_correct == True:
-                result_correct = 'Да'
-            elif result.is_correct == False:
-                result_correct = 'Нет'
-            else:
-                result_correct = 'Не оценено'
-
-            time_done = result.time_result_done + timedelta(hours=5)
             writer.writerow(
-                [result.user.first_name, result.user.last_name, group_name, quiz_name, result.question, result.answer,
-                 result_correct, time_done.strftime("%Y-%m-%d %H:%M:%S")])
+                [olympiad, u.first_name, str(_sec_for_solve), _number_of_points_scored, len(all_tasks),
+                 int(round(_number_of_points_scored / len(all_tasks), 2)*100)])
 
         return response
     else:

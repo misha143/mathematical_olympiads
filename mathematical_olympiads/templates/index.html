@@ -161,54 +161,8 @@
 
 
 
-    {% if not_done_quizzes|length > 1 %}
-    <br>
-    <h4>Закрытые квесты 🚫</h4>
-    <p>Открываются по мере прохождения квестов.</p>
-
-    {% for q in not_done_quizzes %}
-    {% if not forloop.first %}
-    <div class="card shadow-sm" style="margin-bottom: 1rem">
-        <img class="card-img-top" src="{{ q.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(20%);">
-        <div class="card-body">
-            <h5 class="card-title">{{ q.title }}</h5>
-            <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Квест
-                недоступен</button>
-
-        </div>
-    </div>
-    {% endif %}
-
-    {% endfor %}
-    {% endif %}
-
-
-    {% if done_quizzes|length > 0 %}
-
-    {% if not_done_quizzes|length == 0 %}
-    <h4>Вы прошли все квесты 😍</h4>
-    {% else %}
-    <br>
-    <h4>Вы прошли 😜👍</h4>
-    {% endif %}
-    {% for q in done_quizzes %}
-    <div class="card shadow-sm" style="margin-bottom: 1rem">
-        <img class="card-img-top" src="{{ q.image_url }}" style="width: 100%; height: 12rem; object-fit: cover;">
-        <div class="card-body">
-            <h5 class="card-title">{{ q.title }}</h5>
-            <a href="{% url 'quiz' q.pk %}" class="btn btn-outline-danger"><i class="bi bi-eye-fill"></i> Посмотреть</a>
-        </div>
-    </div>
-    {% endfor %}
-    {% endif %}
-
-
-
-
 
 </div>
-
 
 
 
