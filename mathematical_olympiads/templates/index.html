@@ -13,12 +13,26 @@
     {% if user.is_staff %}
 
     <p style="margin-top: 1rem">
-        <a class="btn btn-primary btn-lg btn-block" href="/admin/" role="button"><i class="bi bi-box-arrow-in-right"></i>
+        <a class="btn btn-primary btn-lg btn-block" href="/admin/" role="button"><i
+                class="bi bi-box-arrow-in-right"></i>
             Перейти в админ-панель</a>
-{% if olimp1_finished %}
-        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 1 %}" role="button"><i class="bi bi-download"></i></i>
-            Скачать результаты 1 тура</a>
-        {% endif %}
+
+        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 1 %}" role="button"><i
+                class="bi bi-download"></i></i>
+            Скачать результаты 1 тура (CSV)</a>
+
+
+        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 2 %}" role="button"><i
+                class="bi bi-download"></i></i>
+            Скачать результаты 2 основного тура (CSV)</a>
+
+        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 3 %}" role="button"><i
+                class="bi bi-download"></i></i>
+            Скачать результаты 2 повышенного тура (CSV)</a>
+
+        <a class="btn btn-dark btn-lg btn-block" href="https://convertio.co/ru/csv-xls/" target="_blank" role="button"><i
+                class="bi bi-cloud-arrow-up"></i></i>
+            Конвертер CSV в XLS (EXCEL)</a>
     </p>
     {% else %}
 
@@ -66,19 +80,20 @@
             </p>
             {% if olimp1_work.0.end_time == timetracker.end_time or timetracker == None %}
 
-                {% if first_task %}
-                <!--                        есть первое задание в олимпиаде-->
-                <a href="{% url 'task' olimp1_work.0.pk first_task.pk %}" class="btn btn-outline-primary"><i
-                        class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
-
-                {% else %}
-                <!--                 нет задания       -->
-                <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
-                    0 заданий</button>
-                {% endif %}
+            {% if first_task %}
+            <!--                        есть первое задание в олимпиаде-->
+            <a href="{% url 'task' olimp1_work.0.pk first_task.pk %}" class="btn btn-outline-primary"><i
+                    class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
 
             {% else %}
-                <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно завершили олимпиаду</button>
+            <!--                 нет задания       -->
+            <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
+                0 заданий</button>
+            {% endif %}
+
+            {% else %}
+            <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно
+                завершили олимпиаду</button>
             {% endif %}
             <!--                        }    % url 'olimp' olimp1_work.0.pk %      {               -->
         </div>
@@ -86,7 +101,7 @@
 
 
     <script>
-        let time = {{ olimp1_work_to_end_seconds }};
+        let time = {{olimp1_work_to_end_seconds}};
         const countDownEl = document.getElementById("count_close");
         updateCountdown();
         setInterval(updateCountdown, 1000);
@@ -102,10 +117,12 @@
                 seconds = seconds < 10 ? "0" + seconds : seconds;
 
                 if (time > 300) {
-                    countDownEl.innerHTML = `Закроется через <span class="badge badge-info" >${hours}:${minutes}:${seconds}</span>`;
-                  } else {
-                    countDownEl.innerHTML = `Закроется через <span class="badge badge-danger" >${hours}:${minutes}:${seconds}</span>`;
-                  }
+                    countDownEl.innerHTML =
+                        `Закроется через <span class="badge badge-info" >${hours}:${minutes}:${seconds}</span>`;
+                } else {
+                    countDownEl.innerHTML =
+                        `Закроется через <span class="badge badge-danger" >${hours}:${minutes}:${seconds}</span>`;
+                }
                 time--;
             } else {
                 window.location.reload();
@@ -128,7 +145,7 @@
 
 
     <script>
-        let time = {{ olimp1_waiting_to_begin_seconds }};
+        let time = {{olimp1_waiting_to_begin_seconds}};
         const countDownEl = document.getElementById("count_open");
         updateCountdown();
         setInterval(updateCountdown, 1000);
@@ -154,6 +171,11 @@
 
     {% endif %}
 
+
+    {% if not olimp1_finished %}
+        <br><hr><h5>После прохождения 1 тура олимпиады откроется 2 тур.</h5>
+    {% endif %}
+
     {% endif %}
 
 
@@ -162,6 +184,142 @@
 
 
 
+
+
+    {% if olimp1_finished %}
+
+
+
+
+
+    {% if not olimp2_finished and not olimp2_work and not olimp2_waiting_to_begin %}
+        <br><hr><h2>На сайте нет олимпиад 2 тура.</h2>
+    {% else %}
+    <h4>2 тур</h4>
+
+<!--         олимпиада 2 прошла-->
+    {% if olimp2_finished %}
+    <div class="card shadow-sm" style="margin-bottom: 1rem">
+        <img class="card-img-top" src="{{ olimp2_finished.0.image_url }}"
+            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
+        <div class="card-body">
+            <h5 class="card-title">{{ olimp2_finished.0.title }}</h5>
+            <p class="card-text">{{ olimp2_finished.0.description }}</p>
+            <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Олимпиада
+                завершена</button>
+        </div>
+    </div>
+    {% endif %}
+
+    <!--        прямо сейчас проводится олимпиада 2-->
+    {% if olimp2_work %}
+
+    <div class="card shadow-sm" style="margin-bottom: 1rem">
+        <img class="card-img-top" src="{{ olimp2_work.0.image_url }}"
+            style="width: 100%; height: 12rem; object-fit: cover;">
+        <div class="card-body">
+            <h5 class="card-title">{{ olimp2_work.0.title }}</h5>
+            <p class="card-text">{{ olimp2_work.0.description }}<br>
+                <div id="count_close2"></div>
+            </p>
+            {% if olimp2_work.0.end_time == timetracker_olimp2.end_time or timetracker_olimp2 == None %}
+
+                    {% if first_task_olimp2 %}
+                            <!--                        есть первое задание в олимпиаде-->
+                            <a href="{% url 'task' olimp2_work.0.pk first_task_olimp2.pk %}" class="btn btn-outline-primary"><i
+                                    class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
+
+                    {% else %}
+                            <!--                 нет задания       -->
+                            <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
+                                0 заданий</button>
+                    {% endif %}
+
+            {% else %}
+                    <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно
+                        завершили олимпиаду</button>
+            {% endif %}
+            <!--                        }    % url 'olimp' olimp1_work.0.pk %      {               -->
+        </div>
+    </div>
+
+
+    <script>
+        let time = {{olimp2_work_to_end_seconds}};
+        const countDownEl = document.getElementById("count_close2");
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        function updateCountdown() {
+            if (time != -1) {
+                let hours = Math.floor(time / 3600);
+                let minutes = Math.floor((time - hours * 3600) / 60);
+                let seconds = Math.floor((time - hours * 3600) - minutes * 60);
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                if (time > 300) {
+                    countDownEl.innerHTML =
+                        `Закроется через <span class="badge badge-info" >${hours}:${minutes}:${seconds}</span>`;
+                } else {
+                    countDownEl.innerHTML =
+                        `Закроется через <span class="badge badge-danger" >${hours}:${minutes}:${seconds}</span>`;
+                }
+                time--;
+            } else {
+                window.location.reload();
+            }
+        }
+    </script>
+    {% endif %}
+
+    <!--        ждёт начала-->
+    {% if olimp2_waiting_to_begin %}
+    <div class="card shadow-sm" style="margin-bottom: 1rem">
+        <img class="card-img-top" src="{{ olimp2_waiting_to_begin.0.image_url }}"
+            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
+        <div class="card-body">
+            <h5 class="card-title">{{ olimp2_waiting_to_begin.0.title }}</h5>
+            <p class="card-text">{{ olimp2_waiting_to_begin.0.description }}</p>
+            <button type="button" class="btn btn-outline-primary" disabled id="count_open2"></button>
+        </div>
+    </div>
+
+
+    <script>
+        let time = {{olimp2_waiting_to_begin_seconds}};
+        const countDownEl = document.getElementById("count_open2");
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+
+        function updateCountdown() {
+            if (time != -1) {
+                let hours = Math.floor(time / 3600);
+                let minutes = Math.floor((time - hours * 3600) / 60);
+                let seconds = Math.floor((time - hours * 3600) - minutes * 60);
+
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                countDownEl.innerHTML =
+                    `<i class="bi bi-calendar-event"></i> Откроется через ${hours}:${minutes}:${seconds}`;
+                time--;
+            } else {
+                window.location.reload();
+            }
+        }
+    </script>
+
+    {% endif %}
+
+
+
+    {% endif %}
+
+    {% endif %}
 </div>
 
 

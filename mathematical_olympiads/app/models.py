@@ -37,6 +37,11 @@ class Olympiad(models.Model):
     def __str__(self):
         return self.title
 
+    def display_olympiad_level(self):
+        for i in self.LEVELS:
+            if i[0] == self.olympiad_level:
+                return i[1]
+
 
 class Task(models.Model):
     title = models.CharField(max_length=200, verbose_name="Заголовок задания")

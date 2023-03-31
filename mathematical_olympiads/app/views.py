@@ -43,6 +43,90 @@ def index(request):
         olimp1_waiting_to_begin_seconds = math.ceil(
             (getattr(olimp1_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
 
+    olimp2_finished = None
+
+    olimp2_work = None
+    olimp2_work_to_end_seconds = None
+    first_task_olimp2 = None
+    timetracker_olimp2 = None
+
+    olimp2_waiting_to_begin = None
+    olimp2_waiting_to_begin_seconds = None
+
+    is_povish = None
+
+    if olimp1_finished:
+        # ищем процент пользователя
+        all_tasks = Task.objects.filter(olympiad=olimp1_finished[0])
+        user = get_object_or_404(User, username=request.user.username)
+        number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=user, is_correct=True).count()
+
+        proc = 0
+        try:
+            proc = number_of_points_scored / len(all_tasks)
+        except:
+            pass
+
+        # если больше 50% повышенный
+        if proc >= 0.5:
+            is_povish = True
+
+            # олимпиада 2 прошла когда время окончание меньше now()
+            olimp2_finished = Olympiad.objects.filter(olympiad_level='3', end_time__lt=timezone.now())
+
+            # прямо сейчас проводится олимпиада 2
+            olimp2_work = Olympiad.objects.filter(olympiad_level='3', end_time__gt=timezone.now(),
+                                                  start_time__lt=timezone.now())
+            olimp2_work_to_end_seconds = 0
+            first_task_olimp2 = 0
+            timetracker_olimp2 = 0
+            if olimp2_work:
+                olimp2_work_to_end_seconds = math.ceil(
+                    (getattr(olimp2_work[0], 'end_time') - timezone.now()).total_seconds()) + 2
+                try:
+                    first_task_olimp2 = Task.objects.filter(olympiad__in=olimp2_work).order_by("pk")[0:1].get()
+                except:
+                    pass
+
+                timetracker_olimp2 = Timetrack.objects.filter(olympiad__in=olimp2_work,
+                                                              user__username=request.user.username).first()
+
+            # олимпиада 2 ждёт начала
+            olimp2_waiting_to_begin = Olympiad.objects.filter(olympiad_level='3', start_time__gt=timezone.now())
+            olimp2_waiting_to_begin_seconds = 0
+            if olimp2_waiting_to_begin:
+                olimp2_waiting_to_begin_seconds = math.ceil(
+                    (getattr(olimp2_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
+
+        else:
+            is_povish = False
+            # олимпиада 2 прошла когда время окончание меньше now()
+            olimp2_finished = Olympiad.objects.filter(olympiad_level='2', end_time__lt=timezone.now())
+
+            # прямо сейчас проводится олимпиада 2
+            olimp2_work = Olympiad.objects.filter(olympiad_level='2', end_time__gt=timezone.now(),
+                                                  start_time__lt=timezone.now())
+            olimp2_work_to_end_seconds = 0
+            first_task_olimp2 = 0
+            timetracker_olimp2 = 0
+            if olimp2_work:
+                olimp2_work_to_end_seconds = math.ceil(
+                    (getattr(olimp2_work[0], 'end_time') - timezone.now()).total_seconds()) + 2
+                try:
+                    first_task_olimp2 = Task.objects.filter(olympiad__in=olimp2_work).order_by("pk")[0:1].get()
+                except:
+                    pass
+
+                timetracker_olimp2 = Timetrack.objects.filter(olympiad__in=olimp2_work,
+                                                              user__username=request.user.username).first()
+
+            # олимпиада 2 ждёт начала
+            olimp2_waiting_to_begin = Olympiad.objects.filter(olympiad_level='2', start_time__gt=timezone.now())
+            olimp2_waiting_to_begin_seconds = 0
+            if olimp2_waiting_to_begin:
+                olimp2_waiting_to_begin_seconds = math.ceil(
+                    (getattr(olimp2_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
+
     return render(request, 'index.html', {
         "olimp1_finished": olimp1_finished,
 
@@ -53,6 +137,18 @@ def index(request):
 
         "olimp1_waiting_to_begin": olimp1_waiting_to_begin,
         "olimp1_waiting_to_begin_seconds": olimp1_waiting_to_begin_seconds,
+
+        "olimp2_finished": olimp2_finished,
+
+        "olimp2_work": olimp2_work,
+        "olimp2_work_to_end_seconds": olimp2_work_to_end_seconds,
+        "first_task_olimp2": first_task_olimp2,
+        "timetracker_olimp2": timetracker_olimp2,
+
+        "olimp2_waiting_to_begin": olimp2_waiting_to_begin,
+        "olimp2_waiting_to_begin_seconds": olimp2_waiting_to_begin_seconds,
+
+        "is_povish": is_povish,
     })
 
 
@@ -130,14 +226,27 @@ def olympiad_early_completion(request, pk_olympiad):
 def get_csv(request, pk_olympiad):
     if request.user.is_staff:
         now = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
-        response = HttpResponse(
-            content_type='text/csv',
-            headers={'Content-Disposition': f'attachment; filename="Results_{now}.csv"'},
-        )
-
-        writer = csv.writer(response)
 
         olympiad = get_object_or_404(Olympiad, olympiad_level=pk_olympiad)
+        response = None
+
+        if pk_olympiad == 1:
+            response = HttpResponse(
+                content_type='text/csv',
+                headers={'Content-Disposition': f'attachment; filename="Results_1_tour_{now}.csv"'},
+            )
+        elif pk_olympiad == 2:
+            response = HttpResponse(
+                content_type='text/csv',
+                headers={'Content-Disposition': f'attachment; filename="Results_2_osnovnoy_tour_{now}.csv"'},
+            )
+        else:
+            response = HttpResponse(
+                content_type='text/csv',
+                headers={'Content-Disposition': f'attachment; filename="Results_2_povisheniy_tour_{now}.csv"'},
+            )
+
+        writer = csv.writer(response)
 
         # все задания олимпиады
         all_tasks = Task.objects.filter(olympiad=olympiad)
@@ -150,15 +259,18 @@ def get_csv(request, pk_olympiad):
             unique_users.add(a.user)
 
         writer.writerow(
-            ['Олимпиада', 'Название команды', 'Сколько секунд потратили на решение', 'Сколько баллов заработали',
+            ['Олимпиада', 'Тур олимпиады', 'Название команды', 'Сколько секунд потратили на решение',
+             'Сколько баллов заработали',
              'Всего баллов в олимпиаде', '% правильно решённых заданий'])
         for u in unique_users:
             _sec_for_solve = Timetrack.objects.filter(olympiad=olympiad, user=u).first()
             _number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
 
             writer.writerow(
-                [olympiad, u.first_name, str(_sec_for_solve), _number_of_points_scored, len(all_tasks),
-                 int(round(_number_of_points_scored / len(all_tasks), 2)*100)])
+                [olympiad, olympiad.display_olympiad_level(), u.first_name, str(_sec_for_solve),
+                 _number_of_points_scored,
+                 len(all_tasks),
+                 int(round(_number_of_points_scored / len(all_tasks), 2) * 100)])
 
         return response
     else:
