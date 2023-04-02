@@ -55,11 +55,17 @@ def index(request):
 
     is_povish = None
 
+    olimp1_count_tasks = None
+    olimp1_count_tasks_solve_correct = None
+
     if olimp1_finished:
         # ищем процент пользователя
         all_tasks = Task.objects.filter(olympiad=olimp1_finished[0])
         user = get_object_or_404(User, username=request.user.username)
         number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=user, is_correct=True).count()
+
+        olimp1_count_tasks = len(all_tasks)
+        olimp1_count_tasks_solve_correct = number_of_points_scored
 
         proc = 0
         try:
@@ -127,6 +133,17 @@ def index(request):
                 olimp2_waiting_to_begin_seconds = math.ceil(
                     (getattr(olimp2_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
 
+    olimp2_count_tasks = None
+    olimp2_count_tasks_solve_correct = None
+    if olimp2_finished:
+        # ищем процент пользователя
+        all_tasks = Task.objects.filter(olympiad=olimp2_finished[0])
+        user = get_object_or_404(User, username=request.user.username)
+        number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=user, is_correct=True).count()
+
+        olimp2_count_tasks = len(all_tasks)
+        olimp2_count_tasks_solve_correct = number_of_points_scored
+
     return render(request, 'index.html', {
         "olimp1_finished": olimp1_finished,
 
@@ -149,6 +166,12 @@ def index(request):
         "olimp2_waiting_to_begin_seconds": olimp2_waiting_to_begin_seconds,
 
         "is_povish": is_povish,
+
+        "olimp1_count_tasks":olimp1_count_tasks,
+        "olimp1_count_tasks_solve_correct":olimp1_count_tasks_solve_correct,
+
+        "olimp2_count_tasks": olimp2_count_tasks,
+        "olimp2_count_tasks_solve_correct": olimp2_count_tasks_solve_correct,
     })
 
 
