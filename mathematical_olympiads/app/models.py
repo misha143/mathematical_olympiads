@@ -12,8 +12,7 @@ class Olympiad(models.Model):
 
     LEVELS = (
         ('1', '1 тур'),
-        ('2', '2 тур - основной уровень'),
-        ('3', '2 тур - высший уровень'),
+        ('2', '2 тур'),
     )
     olympiad_level = models.CharField(max_length=1, choices=LEVELS, unique=True, verbose_name="Тур олимпиады")
 

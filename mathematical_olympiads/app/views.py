@@ -53,8 +53,6 @@ def index(request):
     olimp2_waiting_to_begin = None
     olimp2_waiting_to_begin_seconds = None
 
-    is_povish = None
-
     olimp1_count_tasks = None
     olimp1_count_tasks_solve_correct = None
 
@@ -67,71 +65,33 @@ def index(request):
         olimp1_count_tasks = len(all_tasks)
         olimp1_count_tasks_solve_correct = number_of_points_scored
 
-        proc = 0
+
+    # олимпиада 2 прошла когда время окончание меньше now()
+    olimp2_finished = Olympiad.objects.filter(olympiad_level='2', end_time__lt=timezone.now())
+
+    # прямо сейчас проводится олимпиада 2
+    olimp2_work = Olympiad.objects.filter(olympiad_level='2', end_time__gt=timezone.now(),
+                                          start_time__lt=timezone.now())
+    olimp2_work_to_end_seconds = 0
+    first_task_olimp2 = 0
+    timetracker_olimp2 = 0
+    if olimp2_work:
+        olimp2_work_to_end_seconds = math.ceil(
+            (getattr(olimp2_work[0], 'end_time') - timezone.now()).total_seconds()) + 2
         try:
-            proc = number_of_points_scored / len(all_tasks)
+            first_task_olimp2 = Task.objects.filter(olympiad__in=olimp2_work).order_by("pk")[0:1].get()
         except:
             pass
 
-        # если больше 50% повышенный
-        if proc >= 0.5:
-            is_povish = True
+        timetracker_olimp2 = Timetrack.objects.filter(olympiad__in=olimp2_work,
+                                                      user__username=request.user.username).first()
 
-            # олимпиада 2 прошла когда время окончание меньше now()
-            olimp2_finished = Olympiad.objects.filter(olympiad_level='3', end_time__lt=timezone.now())
-
-            # прямо сейчас проводится олимпиада 2
-            olimp2_work = Olympiad.objects.filter(olympiad_level='3', end_time__gt=timezone.now(),
-                                                  start_time__lt=timezone.now())
-            olimp2_work_to_end_seconds = 0
-            first_task_olimp2 = 0
-            timetracker_olimp2 = 0
-            if olimp2_work:
-                olimp2_work_to_end_seconds = math.ceil(
-                    (getattr(olimp2_work[0], 'end_time') - timezone.now()).total_seconds()) + 2
-                try:
-                    first_task_olimp2 = Task.objects.filter(olympiad__in=olimp2_work).order_by("pk")[0:1].get()
-                except:
-                    pass
-
-                timetracker_olimp2 = Timetrack.objects.filter(olympiad__in=olimp2_work,
-                                                              user__username=request.user.username).first()
-
-            # олимпиада 2 ждёт начала
-            olimp2_waiting_to_begin = Olympiad.objects.filter(olympiad_level='3', start_time__gt=timezone.now())
-            olimp2_waiting_to_begin_seconds = 0
-            if olimp2_waiting_to_begin:
-                olimp2_waiting_to_begin_seconds = math.ceil(
-                    (getattr(olimp2_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
-
-        else:
-            is_povish = False
-            # олимпиада 2 прошла когда время окончание меньше now()
-            olimp2_finished = Olympiad.objects.filter(olympiad_level='2', end_time__lt=timezone.now())
-
-            # прямо сейчас проводится олимпиада 2
-            olimp2_work = Olympiad.objects.filter(olympiad_level='2', end_time__gt=timezone.now(),
-                                                  start_time__lt=timezone.now())
-            olimp2_work_to_end_seconds = 0
-            first_task_olimp2 = 0
-            timetracker_olimp2 = 0
-            if olimp2_work:
-                olimp2_work_to_end_seconds = math.ceil(
-                    (getattr(olimp2_work[0], 'end_time') - timezone.now()).total_seconds()) + 2
-                try:
-                    first_task_olimp2 = Task.objects.filter(olympiad__in=olimp2_work).order_by("pk")[0:1].get()
-                except:
-                    pass
-
-                timetracker_olimp2 = Timetrack.objects.filter(olympiad__in=olimp2_work,
-                                                              user__username=request.user.username).first()
-
-            # олимпиада 2 ждёт начала
-            olimp2_waiting_to_begin = Olympiad.objects.filter(olympiad_level='2', start_time__gt=timezone.now())
-            olimp2_waiting_to_begin_seconds = 0
-            if olimp2_waiting_to_begin:
-                olimp2_waiting_to_begin_seconds = math.ceil(
-                    (getattr(olimp2_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
+    # олимпиада 2 ждёт начала
+    olimp2_waiting_to_begin = Olympiad.objects.filter(olympiad_level='2', start_time__gt=timezone.now())
+    olimp2_waiting_to_begin_seconds = 0
+    if olimp2_waiting_to_begin:
+        olimp2_waiting_to_begin_seconds = math.ceil(
+            (getattr(olimp2_waiting_to_begin[0], 'start_time') - timezone.now()).total_seconds()) + 2
 
     olimp2_count_tasks = None
     olimp2_count_tasks_solve_correct = None
@@ -155,6 +115,8 @@ def index(request):
         "olimp1_waiting_to_begin": olimp1_waiting_to_begin,
         "olimp1_waiting_to_begin_seconds": olimp1_waiting_to_begin_seconds,
 
+
+
         "olimp2_finished": olimp2_finished,
 
         "olimp2_work": olimp2_work,
@@ -165,7 +127,8 @@ def index(request):
         "olimp2_waiting_to_begin": olimp2_waiting_to_begin,
         "olimp2_waiting_to_begin_seconds": olimp2_waiting_to_begin_seconds,
 
-        "is_povish": is_povish,
+
+
 
         "olimp1_count_tasks":olimp1_count_tasks,
         "olimp1_count_tasks_solve_correct":olimp1_count_tasks_solve_correct,

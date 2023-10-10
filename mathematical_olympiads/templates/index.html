@@ -24,15 +24,8 @@
 
         <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 2 %}" role="button"><i
                 class="bi bi-download"></i></i>
-            Скачать результаты 2 основного тура (CSV)</a>
+            Скачать результаты 2 тура (CSV)</a>
 
-        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 3 %}" role="button"><i
-                class="bi bi-download"></i></i>
-            Скачать результаты 2 повышенного тура (CSV)</a>
-
-        <a class="btn btn-dark btn-lg btn-block" href="https://convertio.co/ru/csv-xls/" target="_blank" role="button"><i
-                class="bi bi-cloud-arrow-up"></i></i>
-            Конвертер CSV в XLS (EXCEL)</a>
     </p>
     {% else %}
 
@@ -175,11 +168,10 @@
     {% endif %}
 
 
-    {% if not olimp1_finished %}
-        <br><hr><h5>После прохождения 1 тура олимпиады откроется 2 тур.</h5>
+
+
     {% endif %}
 
-    {% endif %}
 
 
 
@@ -189,7 +181,6 @@
 
 
 
-    {% if olimp1_finished %}
 
 
 
@@ -217,6 +208,11 @@
         </div>
     </div>
     {% endif %}
+
+
+
+
+
 
     <!--        прямо сейчас проводится олимпиада 2-->
     {% if olimp2_work %}
@@ -252,38 +248,46 @@
 
 
     <script>
-        let time = {{olimp2_work_to_end_seconds}};
-        const countDownEl = document.getElementById("count_close2");
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+        let time_2 = {{olimp2_work_to_end_seconds}};
+        const countDownEl_2 = document.getElementById("count_close2");
+        updateCountdown_2();
+        setInterval(updateCountdown_2, 1000);
 
-        function updateCountdown() {
-            if (time != -1) {
-                let hours = Math.floor(time / 3600);
-                let minutes = Math.floor((time - hours * 3600) / 60);
-                let seconds = Math.floor((time - hours * 3600) - minutes * 60);
+        function updateCountdown_2() {
+            if (time_2 != -1) {
+                let hours_2 = Math.floor(time_2 / 3600);
+                let minutes_2 = Math.floor((time_2 - hours_2 * 3600) / 60);
+                let seconds_2 = Math.floor((time_2 - hours_2 * 3600) - minutes_2 * 60);
 
-                hours = hours < 10 ? "0" + hours : hours;
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
+                hours_2 = hours_2 < 10 ? "0" + hours_2 : hours_2;
+                minutes_2 = minutes_2 < 10 ? "0" + minutes_2 : minutes_2;
+                seconds_2 = seconds_2 < 10 ? "0" + seconds_2 : seconds_2;
 
-                if (time > 300) {
-                    countDownEl.innerHTML =
-                        `Закроется через <span class="badge badge-info" >${hours}:${minutes}:${seconds}</span>`;
+                if (time_2 > 300) {
+                    countDownEl_2.innerHTML =
+                        `Закроется через <span class="badge badge-info">${hours_2}:${minutes_2}:${seconds_2}</span>`;
                 } else {
-                    countDownEl.innerHTML =
-                        `Закроется через <span class="badge badge-danger" >${hours}:${minutes}:${seconds}</span>`;
+                    countDownEl_2.innerHTML =
+                        `Закроется через <span class="badge badge-danger">${hours_2}:${minutes_2}:${seconds_2}</span>`;
                 }
-                time--;
+                time_2--;
             } else {
                 window.location.reload();
             }
         }
     </script>
+
     {% endif %}
+
+
+
+
+
+
 
     <!--        ждёт начала-->
     {% if olimp2_waiting_to_begin %}
+
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp2_waiting_to_begin.0.image_url }}"
             style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
@@ -295,25 +299,26 @@
     </div>
 
 
+
     <script>
-        let time = {{olimp2_waiting_to_begin_seconds}};
-        const countDownEl = document.getElementById("count_open2");
-        updateCountdown();
-        setInterval(updateCountdown, 1000);
+        let time_2 = {{olimp2_waiting_to_begin_seconds}};
+        const countDownEl_2 = document.getElementById("count_open2");
+        updateCountdown_2();
+        setInterval(updateCountdown_2, 1000);
 
-        function updateCountdown() {
-            if (time != -1) {
-                let hours = Math.floor(time / 3600);
-                let minutes = Math.floor((time - hours * 3600) / 60);
-                let seconds = Math.floor((time - hours * 3600) - minutes * 60);
+        function updateCountdown_2() {
+            if (time_2 != -1) {
+                let hours_2 = Math.floor(time_2 / 3600);
+                let minutes_2 = Math.floor((time_2 - hours_2 * 3600) / 60);
+                let seconds_2 = Math.floor((time_2 - hours_2 * 3600) - minutes_2 * 60);
 
-                hours = hours < 10 ? "0" + hours : hours;
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
+                hours_2 = hours_2 < 10 ? "0" + hours_2 : hours_2;
+                minutes_2 = minutes_2 < 10 ? "0" + minutes_2 : minutes_2;
+                seconds_2 = seconds_2 < 10 ? "0" + seconds_2 : seconds_2;
 
-                countDownEl.innerHTML =
-                    `<i class="bi bi-calendar-event"></i> Откроется через ${hours}:${minutes}:${seconds}`;
-                time--;
+                countDownEl_2.innerHTML =
+                    `<i class="bi bi-calendar-event"></i> Откроется через ${hours_2}:${minutes_2}:${seconds_2}`;
+                time_2--;
             } else {
                 window.location.reload();
             }
@@ -326,7 +331,7 @@
 
     {% endif %}
 
-    {% endif %}
+
 </div>
 
 
