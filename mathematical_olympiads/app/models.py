@@ -68,6 +68,7 @@ class Answer(models.Model):
     is_correct = models.BooleanField(verbose_name="Правильно ответили?")
     answer_created = models.DateTimeField(verbose_name="Когда ответили? (UTC+5)", auto_now_add=True, blank=True,
                                           null=True)
+    attempt_number = models.PositiveSmallIntegerField(verbose_name="Номер попытки", blank=True, null=True)
 
     class Meta:
         verbose_name = 'Ответ'

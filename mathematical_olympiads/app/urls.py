@@ -8,4 +8,5 @@ urlpatterns = [
     path("olympiad/<int:pk_olympiad>/early_completion", views.olympiad_early_completion,
          name="olympiad_early_completion"),
     path("olympiad/<int:pk_olympiad>/task/<int:pk_task>", views.task_view, name="task"),
+    path("olympiad2/<int:pk_olympiad>/task/<int:pk_task>", views.task_view2, name="task2"),
 ]

@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}{{ task }}{% endblock %}
+{% block content %}
+{% include 'nav.html' %}
+
+<div class="container">
+    <div class="row">
+        {% include "sidebar_question2.html" %}
+        <div class="col-md-9">
+            <div class="card mb-3 shadow-sm">
+                {% if task.image_url %}
+                <img class="card-img-top" src="{{ task.image_url }}" style="object-fit: cover;">
+                {% endif %}
+                <div class="card-body">
+                    <h4 class="card-title">{{ task.title }}</h4>
+                    <p class="card-text">{{ task.text }}</p>
+
+
+
+
+
+                    <form action="{% url 'task2' olympiad.pk task.pk %}" method="post">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="replyNumber">Ваш ответ
+                                {% if task in answered_tasks and task not in answered_tasks_correct %}
+                                <span class="badge badge-danger">не верный</span>
+                                {% endif %}
+
+                                {% if task in answered_tasks and task in answered_tasks_correct %}
+                                <span class="badge badge-success">верный</span>
+                                {% endif %}
+
+                                {% if task not in answered_tasks %}
+                                <span class="badge badge-secondary">нет ответа</span>
+                                {% endif %}
+
+                            </label>
+                            <input type="number" class="form-control" id="replyNumber" rows="3" step="any"
+                                name="user_input_number" required
+                                   {% if answer %}
+                                   value="{{ answer.answer|floatformat }}"
+                                    {% endif %}
+                            />
+
+                        </div>
+                        <button type="submit" class="btn btn-outline-primary">Отправить</button>
+                    </form>
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

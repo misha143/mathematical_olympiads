@@ -14,12 +14,14 @@ class TaskAdmin(admin.ModelAdmin):
 
 
 class AnswerAdmin(admin.ModelAdmin):
-    list_display = ("task", "user", "answer", "is_correct", "answer_created")
+    list_display = ("task", "user", "answer", "is_correct", "answer_created", "attempt_number")
     list_filter = ("user",)
+
 
 class TimetrackAdmin(admin.ModelAdmin):
     list_display = ("olympiad", "user", "start_time", "end_time")
-    list_filter = ("user","olympiad",)
+    list_filter = ("user", "olympiad",)
+
 
 admin.site.register(Olympiad, OlympiadAdmin)
 admin.site.register(Task, TaskAdmin)

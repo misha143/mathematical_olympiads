@@ -65,7 +65,6 @@ def index(request):
         olimp1_count_tasks = len(all_tasks)
         olimp1_count_tasks_solve_correct = number_of_points_scored
 
-
     # олимпиада 2 прошла когда время окончание меньше now()
     olimp2_finished = Olympiad.objects.filter(olympiad_level='2', end_time__lt=timezone.now())
 
@@ -115,8 +114,6 @@ def index(request):
         "olimp1_waiting_to_begin": olimp1_waiting_to_begin,
         "olimp1_waiting_to_begin_seconds": olimp1_waiting_to_begin_seconds,
 
-
-
         "olimp2_finished": olimp2_finished,
 
         "olimp2_work": olimp2_work,
@@ -127,11 +124,8 @@ def index(request):
         "olimp2_waiting_to_begin": olimp2_waiting_to_begin,
         "olimp2_waiting_to_begin_seconds": olimp2_waiting_to_begin_seconds,
 
-
-
-
-        "olimp1_count_tasks":olimp1_count_tasks,
-        "olimp1_count_tasks_solve_correct":olimp1_count_tasks_solve_correct,
+        "olimp1_count_tasks": olimp1_count_tasks,
+        "olimp1_count_tasks_solve_correct": olimp1_count_tasks_solve_correct,
 
         "olimp2_count_tasks": olimp2_count_tasks,
         "olimp2_count_tasks_solve_correct": olimp2_count_tasks_solve_correct,
@@ -190,6 +184,75 @@ def task_view(request, pk_olympiad, pk_task):
             "olympiad": olympiad,
             "task": task,
             "answered_tasks": answered_tasks,
+            "all_tasks": all_tasks,
+            "answer": answer,
+            "olimp_work_to_end_seconds": olimp_work_to_end_seconds,
+        })
+
+
+@login_required
+def task_view2(request, pk_olympiad, pk_task):
+    user = get_object_or_404(User, username=request.user.username)
+    task = get_object_or_404(Task, pk=pk_task)
+    if request.method == 'POST':
+        # пробуем найти существующий
+        ans = Answer.objects.filter(user=user, task=task).first()
+        # если нашли, то ставим новый ответ
+        if ans:
+            if ans.attempt_number == 1:
+                ans.answer = float(request.POST['user_input_number'])
+                ans.is_correct = task.correct_answer == ans.answer
+                ans.answer_created = timezone.now()
+                ans.attempt_number += 1
+                ans.save()
+            else:
+                return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+        # если нет в базе
+        else:
+            Answer.objects.create(task=task, user=user, answer=float(request.POST['user_input_number']),
+                                  is_correct=task.correct_answer == float(request.POST['user_input_number']),
+                                  attempt_number=1)
+
+        return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+    else:
+        olympiad = get_object_or_404(Olympiad, pk=pk_olympiad)
+
+        # пробуем найти существующий отсчёт времени
+        timetracker = Timetrack.objects.filter(olympiad=olympiad, user=user).first()
+        # если нет в базе
+        if not timetracker:
+            Timetrack.objects.create(olympiad=olympiad, user=user, end_time=olympiad.end_time)
+
+        task = get_object_or_404(Task, pk=pk_task)
+        if not (timezone.now() > getattr(olympiad, 'start_time') and timezone.now() < getattr(olympiad, 'end_time')) \
+                or task.olympiad != olympiad:
+            return redirect('index')
+
+        olimp_work_to_end_seconds = math.ceil(
+            (getattr(olympiad, 'end_time') - timezone.now()).total_seconds()) + 2
+
+        # все задания олимпиады
+        all_tasks = Task.objects.filter(olympiad=olympiad).order_by("pk")
+
+        # задания олимпиады на которые ответил человек
+        answered_tasks = []
+        for t in all_tasks:
+            if Answer.objects.filter(user=user, task=t).exists():
+                answered_tasks.append(t)
+        # задания олимпиады на которые ответил человек правильно
+        answered_tasks_correct = []
+        for t in all_tasks:
+            if Answer.objects.filter(user=user, task=t, is_correct=True).exists():
+                answered_tasks_correct.append(t)
+
+        # пробуем найти существующий ответ
+        answer = Answer.objects.filter(user=user, task=task).first()
+
+        return render(request, 'task2.html', {
+            "olympiad": olympiad,
+            "task": task,
+            "answered_tasks": answered_tasks,
+            "answered_tasks_correct":answered_tasks_correct,
             "all_tasks": all_tasks,
             "answer": answer,
             "olimp_work_to_end_seconds": olimp_work_to_end_seconds,
