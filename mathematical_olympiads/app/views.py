@@ -248,6 +248,8 @@ def task_view2(request, pk_olympiad, pk_task):
         # пробуем найти существующий ответ
         answer = Answer.objects.filter(user=user, task=task).first()
 
+
+
         return render(request, 'task2.html', {
             "olympiad": olympiad,
             "task": task,

@@ -19,7 +19,11 @@
 
 
 
-                    <form action="{% url 'task2' olympiad.pk task.pk %}" method="post">
+                    <form
+                            {% if answer.attempt_number != 2 %}
+                        action="{% url 'task2' olympiad.pk task.pk %}" method="post"
+                        {% endif %}
+                    >
                         {% csrf_token %}
                         <div class="form-group">
                             <label for="replyNumber">Ваш ответ
@@ -44,7 +48,37 @@
                             />
 
                         </div>
+
+<!--                        вывод числа попыток-->
+
+                        <p>Использовано попыток:
+                        {% if not answer %}
+                        0/2
+                        {% endif %}
+                        {% if answer.attempt_number == 1 %}
+                        1/2
+                        {% endif %}
+                        {% if answer.attempt_number == 2 %}
+                        2/2
+                        {% endif %}
+                        </p>
+
+
+
+
+<!--   можно отправить ответ-->
+                        {% if answer.attempt_number != 2 %}
                         <button type="submit" class="btn btn-outline-primary">Отправить</button>
+                        {% endif %}
+
+
+
+<!--   нельзя отправить ответ-->
+                        {% if answer.attempt_number == 2 %}
+                        <button class="btn btn-outline-secondary" disabled>Отправить</button>
+                        {% endif %}
+
+
                     </form>
 
 
