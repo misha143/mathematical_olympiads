@@ -1,13 +1,12 @@
 import math
 
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseRedirect, JsonResponse
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
 from datetime import datetime, timedelta
 from django.utils import timezone
 import csv
-from collections import Counter
 from django.http import HttpResponse, HttpResponseNotFound
 
 from .models import Olympiad, Task, Answer, Timetrack
@@ -228,7 +227,6 @@ def task_view2(request, pk_olympiad, pk_task):
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
 
-
         # пробуем найти существующий отсчёт времени
         timetracker = Timetrack.objects.filter(olympiad=olympiad, user=user).first()
         # если нет в базе
@@ -259,8 +257,6 @@ def task_view2(request, pk_olympiad, pk_task):
 
         # пробуем найти существующий ответ
         answer = Answer.objects.filter(user=user, task=task).first()
-
-
 
         return render(request, 'task2.html', {
             "olympiad": olympiad,
@@ -337,5 +333,55 @@ def get_csv(request, pk_olympiad):
                  int(round(_number_of_points_scored / len(all_tasks), 2) * 100)])
 
         return response
+    else:
+        return HttpResponseNotFound("Экспорт данных может делать только администратор")
+
+
+@login_required
+def get_results(request, pk_olympiad):
+    if request.user.is_staff:
+        olympiad = get_object_or_404(Olympiad, olympiad_level=pk_olympiad)
+
+        # все задания олимпиады
+        all_tasks = Task.objects.filter(olympiad=olympiad)
+
+        all_answers = Answer.objects.filter(task__in=all_tasks)
+
+        unique_users = set()
+
+        for a in all_answers:
+            unique_users.add(a.user)
+
+        header_array = []
+        header_array.append(
+            ['Олимпиада', 'Тур олимпиады', 'Название команды', 'Сколько секунд потратили на решение',
+             'Сколько баллов заработали',
+             'Всего баллов в олимпиаде', '% правильно решённых заданий', 'Место'])
+
+        total_array = []
+        for u in unique_users:
+            _sec_for_solve = Timetrack.objects.filter(olympiad=olympiad, user=u).first()
+            _count_task_solved_coorect = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
+            _total_points = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True,
+                                                  attempt_number=1).count() * 2 + Answer.objects.filter(
+                task__in=all_tasks, user=u, is_correct=True, attempt_number=2).count()
+
+            total_array.append(
+                [olympiad, olympiad.display_olympiad_level(), u.first_name, str(_sec_for_solve),
+                 _total_points,
+                 len(all_tasks)*2,
+                 int(round(_count_task_solved_coorect / len(all_tasks), 2) * 100)])
+
+        total_array.sort(key=lambda x: (-x[4], x[3]))
+        for i, result in enumerate(total_array):
+            result.append(i + 1)
+
+        return render(request, 'results.html', {
+            "header_array": header_array,
+            "total_array": total_array,
+            "olympiad": olympiad,
+
+        })
+
     else:
         return HttpResponseNotFound("Экспорт данных может делать только администратор")

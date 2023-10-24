@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ task }}{% endblock %}
+{% block content %}
+{% include 'nav.html' %}
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1>Результаты {{ olympiad }}</h1>
+            <table class="table table-bordered" style="background-color: white">
+                <thead>
+                <tr>
+                    <th>Олимпиада</th>
+                    <th>Тур олимпиады</th>
+                    <th>Название команды</th>
+                    <th>Сколько секунд потратили на решение</th>
+                    <th>Сколько баллов заработали</th>
+                    <th>Всего баллов в олимпиаде</th>
+                    <th>% правильно решённых заданий</th>
+                    <th>Место</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for result in total_array %}
+                <tr>
+                    <td>{{ result.0 }}</td>
+                    <td>{{ result.1 }}</td>
+                    <td>{{ result.2 }}</td>
+                    <td>{{ result.3 }}</td>
+                    <td>{{ result.4 }}</td>
+                    <td>{{ result.5 }}</td>
+                    <td>{{ result.6 }}</td>
+                    <td>{{ result.7 }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

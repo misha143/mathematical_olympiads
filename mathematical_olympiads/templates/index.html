@@ -22,9 +22,9 @@
             Скачать результаты 1 тура (CSV)</a>
 
 
-        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 2 %}" role="button"><i
+        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_results' 2 %}" role="button"><i
                 class="bi bi-download"></i></i>
-            Скачать результаты 2 тура (CSV)</a>
+            Результаты 2 тура</a>
 
     </p>
     {% else %}
@@ -50,7 +50,7 @@
     {% if olimp1_finished %}
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp1_finished.0.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
+             style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
         <div class="card-body">
             <h5 class="card-title">{{ olimp1_finished.0.title }}</h5>
             <p class="card-text">{{ olimp1_finished.0.description }}
@@ -58,7 +58,8 @@
                 Вы верно решили {{olimp1_count_tasks_solve_correct}} из {{olimp1_count_tasks}} задания(ий)
             </p>
             <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Олимпиада
-                завершена</button>
+                завершена
+            </button>
         </div>
     </div>
     {% endif %}
@@ -68,11 +69,11 @@
 
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp1_work.0.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover;">
+             style="width: 100%; height: 12rem; object-fit: cover;">
         <div class="card-body">
             <h5 class="card-title">{{ olimp1_work.0.title }}</h5>
             <p class="card-text">{{ olimp1_work.0.description }}<br>
-                <div id="count_close"></div>
+            <div id="count_close"></div>
             </p>
             {% if olimp1_work.0.end_time == timetracker.end_time or timetracker == None %}
 
@@ -84,12 +85,14 @@
             {% else %}
             <!--                 нет задания       -->
             <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
-                0 заданий</button>
+                0 заданий
+            </button>
             {% endif %}
 
             {% else %}
             <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно
-                завершили олимпиаду</button>
+                завершили олимпиаду
+            </button>
             {% endif %}
             <!--                        }    % url 'olimp' olimp1_work.0.pk %      {               -->
         </div>
@@ -124,6 +127,7 @@
                 window.location.reload();
             }
         }
+
     </script>
     {% endif %}
 
@@ -131,7 +135,7 @@
     {% if olimp1_waiting_to_begin %}
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp1_waiting_to_begin.0.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
+             style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
         <div class="card-body">
             <h5 class="card-title">{{ olimp1_waiting_to_begin.0.title }}</h5>
             <p class="card-text">{{ olimp1_waiting_to_begin.0.description }}</p>
@@ -163,39 +167,27 @@
                 window.location.reload();
             }
         }
+
     </script>
 
     {% endif %}
 
 
-
-
     {% endif %}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
     {% if not olimp2_finished and not olimp2_work and not olimp2_waiting_to_begin %}
-        <br><hr><h2>На сайте нет олимпиад 2 тура.</h2>
+    <br>
+    <hr>
+    <h2>На сайте нет олимпиад 2 тура.</h2>
     {% else %}
     <h4>2 тур</h4>
 
-<!--         олимпиада 2 прошла-->
+    <!--         олимпиада 2 прошла-->
     {% if olimp2_finished %}
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp2_finished.0.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
+             style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
         <div class="card-body">
             <h5 class="card-title">{{ olimp2_finished.0.title }}</h5>
             <p class="card-text">{{ olimp2_finished.0.description }}
@@ -204,14 +196,11 @@
             </p>
 
             <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Олимпиада
-                завершена</button>
+                завершена
+            </button>
         </div>
     </div>
     {% endif %}
-
-
-
-
 
 
     <!--        прямо сейчас проводится олимпиада 2-->
@@ -219,28 +208,30 @@
 
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp2_work.0.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover;">
+             style="width: 100%; height: 12rem; object-fit: cover;">
         <div class="card-body">
             <h5 class="card-title">{{ olimp2_work.0.title }}</h5>
             <p class="card-text">{{ olimp2_work.0.description }}<br>
-                <div id="count_close2"></div>
+            <div id="count_close2"></div>
             </p>
             {% if olimp2_work.0.end_time == timetracker_olimp2.end_time or timetracker_olimp2 == None %}
 
-                    {% if first_task_olimp2 %}
-                            <!--                        есть первое задание в олимпиаде-->
-                            <a href="{% url 'task2' olimp2_work.0.pk first_task_olimp2.pk %}" class="btn btn-outline-primary"><i
-                                    class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
-
-                    {% else %}
-                            <!--                 нет задания       -->
-                            <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
-                                0 заданий</button>
-                    {% endif %}
+            {% if first_task_olimp2 %}
+            <!--                        есть первое задание в олимпиаде-->
+            <a href="{% url 'task2' olimp2_work.0.pk first_task_olimp2.pk %}" class="btn btn-outline-primary"><i
+                    class="bi bi-unlock-fill"></i> Перейти к олимпиаде</a>
 
             {% else %}
-                    <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно
-                        завершили олимпиаду</button>
+            <!--                 нет задания       -->
+            <button type="button" class="btn btn-outline-secondary" disabled><i class="bi bi-lock-fill"></i> В олимпиаде
+                0 заданий
+            </button>
+            {% endif %}
+
+            {% else %}
+            <button type="button" class="btn btn-outline-danger" disabled><i class="bi bi-lock-fill"></i> Вы досрочно
+                завершили олимпиаду
+            </button>
             {% endif %}
             <!--                        }    % url 'olimp' olimp1_work.0.pk %      {               -->
         </div>
@@ -275,14 +266,10 @@
                 window.location.reload();
             }
         }
+
     </script>
 
     {% endif %}
-
-
-
-
-
 
 
     <!--        ждёт начала-->
@@ -290,14 +277,13 @@
 
     <div class="card shadow-sm" style="margin-bottom: 1rem">
         <img class="card-img-top" src="{{ olimp2_waiting_to_begin.0.image_url }}"
-            style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
+             style="width: 100%; height: 12rem; object-fit: cover; filter: brightness(35%);">
         <div class="card-body">
             <h5 class="card-title">{{ olimp2_waiting_to_begin.0.title }}</h5>
             <p class="card-text">{{ olimp2_waiting_to_begin.0.description }}</p>
             <button type="button" class="btn btn-outline-primary" disabled id="count_open2"></button>
         </div>
     </div>
-
 
 
     <script>
@@ -323,17 +309,16 @@
                 window.location.reload();
             }
         }
+
     </script>
 
     {% endif %}
-
 
 
     {% endif %}
 
 
 </div>
-
 
 
 {% endblock %}
