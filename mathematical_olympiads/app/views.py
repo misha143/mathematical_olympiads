@@ -194,7 +194,19 @@ def task_view(request, pk_olympiad, pk_task):
 def task_view2(request, pk_olympiad, pk_task):
     user = get_object_or_404(User, username=request.user.username)
     task = get_object_or_404(Task, pk=pk_task)
+    olympiad = get_object_or_404(Olympiad, pk=pk_olympiad)
+
+    # закрываем отправку если больше 50% команд верно решили задачу
+    total_users_started_olympiad = Timetrack.objects.filter(olympiad=olympiad).count()
+    users_answered_correctly = Answer.objects.filter(task=task, is_correct=True).count()
+    threshold = total_users_started_olympiad * 0.5
+    is_open_task_50_percent_rule = users_answered_correctly <= threshold
+
     if request.method == 'POST':
+
+        if not is_open_task_50_percent_rule:
+            return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
+
         # пробуем найти существующий
         ans = Answer.objects.filter(user=user, task=task).first()
         # если нашли, то ставим новый ответ
@@ -215,7 +227,7 @@ def task_view2(request, pk_olympiad, pk_task):
 
         return HttpResponseRedirect(request.META.get('HTTP_REFERER'))
     else:
-        olympiad = get_object_or_404(Olympiad, pk=pk_olympiad)
+
 
         # пробуем найти существующий отсчёт времени
         timetracker = Timetrack.objects.filter(olympiad=olympiad, user=user).first()
@@ -254,10 +266,11 @@ def task_view2(request, pk_olympiad, pk_task):
             "olympiad": olympiad,
             "task": task,
             "answered_tasks": answered_tasks,
-            "answered_tasks_correct":answered_tasks_correct,
+            "answered_tasks_correct": answered_tasks_correct,
             "all_tasks": all_tasks,
             "answer": answer,
             "olimp_work_to_end_seconds": olimp_work_to_end_seconds,
+            "is_open_task_50_percent_rule": is_open_task_50_percent_rule,
         })
 
 
