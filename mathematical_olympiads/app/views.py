@@ -55,6 +55,8 @@ def index(request):
     olimp1_count_tasks = None
     olimp1_count_tasks_solve_correct = None
 
+    olimp2_user_place = None
+
     if olimp1_finished:
         # ищем процент пользователя
         all_tasks = Task.objects.filter(olympiad=olimp1_finished[0])
