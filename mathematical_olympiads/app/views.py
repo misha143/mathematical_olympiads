@@ -102,6 +102,33 @@ def index(request):
         olimp2_count_tasks = len(all_tasks)
         olimp2_count_tasks_solve_correct = number_of_points_scored
 
+        # все задания олимпиады
+        all_tasks = Task.objects.filter(olympiad=olimp2_finished[0])
+        all_answers = Answer.objects.filter(task__in=all_tasks)
+        unique_users = set()
+        for a in all_answers:
+            unique_users.add(a.user)
+
+        total_array = []
+        for u in unique_users:
+            _sec_for_solve = Timetrack.objects.filter(olympiad=olimp2_finished[0], user=u).first()
+
+            _total_points = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True,
+                                                  attempt_number=1).count() * 2 + Answer.objects.filter(
+                task__in=all_tasks, user=u, is_correct=True, attempt_number=2).count()
+
+            total_array.append(
+                [int(str(_sec_for_solve)), _total_points, u])
+
+        total_array.sort(key=lambda x: (-x[1], x[0]))
+
+        olimp2_user_place = None
+
+        for i, result in enumerate(total_array):
+            if result[2] == request.user:
+                olimp2_user_place = i + 1
+                break
+
     return render(request, 'index.html', {
         "olimp1_finished": olimp1_finished,
 
@@ -128,6 +155,8 @@ def index(request):
 
         "olimp2_count_tasks": olimp2_count_tasks,
         "olimp2_count_tasks_solve_correct": olimp2_count_tasks_solve_correct,
+
+        "olimp2_user_place": olimp2_user_place,
     })
 
 
@@ -327,7 +356,7 @@ def get_csv(request, pk_olympiad):
             _number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
 
             writer.writerow(
-                [olympiad, olympiad.display_olympiad_level(), u.first_name, str(_sec_for_solve),
+                [olympiad, olympiad.display_olympiad_level(), u.first_name,str(_sec_for_solve),
                  _number_of_points_scored,
                  len(all_tasks),
                  int(round(_number_of_points_scored / len(all_tasks), 2) * 100)])
@@ -367,9 +396,9 @@ def get_results(request, pk_olympiad):
                 task__in=all_tasks, user=u, is_correct=True, attempt_number=2).count()
 
             total_array.append(
-                [olympiad, olympiad.display_olympiad_level(), u.first_name, str(_sec_for_solve),
+                [olympiad, olympiad.display_olympiad_level(), u.first_name, int(str(_sec_for_solve)),
                  _total_points,
-                 len(all_tasks)*2,
+                 len(all_tasks) * 2,
                  int(round(_count_task_solved_coorect / len(all_tasks), 2) * 100)])
 
         total_array.sort(key=lambda x: (-x[4], x[3]))
