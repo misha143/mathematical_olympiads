@@ -9,14 +9,11 @@
         <div class="col-md-9">
             <div class="card mb-3 shadow-sm">
                 {% if task.image_url %}
-                <img class="card-img-top" src="{{ task.image_url }}" style="object-fit: cover;">
+                <img class="card-img-top" src="{{ task.image_url }}" style="object-fit: cover; max-height: 200px">
                 {% endif %}
                 <div class="card-body">
                     <h4 class="card-title">{{ task.title }}</h4>
                     <p class="card-text">{{ task.text }}</p>
-
-
-
 
 
                     <form
