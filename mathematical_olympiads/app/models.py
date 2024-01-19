@@ -22,6 +22,15 @@ class Olympiad(models.Model):
     start_time = models.DateTimeField(verbose_name="Время старта олимпиады")
     end_time = models.DateTimeField(verbose_name="Время окончания олимпиады")
 
+    ATTEMPTS = (
+        (1, '1 попытка'),
+        (2, '2 попытки'),
+        (3, '3 попытки'),
+        (4, '4 попытки'),
+        (5, '5 попыток'),
+    )
+    number_of_attempts = models.IntegerField(choices=ATTEMPTS, unique=True, verbose_name="Количество попыток отправки решения для каждого задания 2 тура олимпиады (если у вас 1 тур, то выберите любое)")
+
     class Meta:
         verbose_name = 'Олимпиада'
         verbose_name_plural = 'Олимпиады'

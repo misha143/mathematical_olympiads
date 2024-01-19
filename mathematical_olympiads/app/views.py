@@ -358,7 +358,7 @@ def get_csv(request, pk_olympiad):
             _number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
 
             writer.writerow(
-                [olympiad, olympiad.display_olympiad_level(), u.first_name,str(_sec_for_solve),
+                [olympiad, olympiad.display_olympiad_level(), u.first_name, str(_sec_for_solve),
                  _number_of_points_scored,
                  len(all_tasks),
                  int(round(_number_of_points_scored / len(all_tasks), 2) * 100)])
