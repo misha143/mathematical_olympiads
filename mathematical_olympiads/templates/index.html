@@ -17,9 +17,9 @@
                 class="bi bi-box-arrow-in-right"></i>
             Перейти в админ-панель</a>
 {% if olimp1_finished %}
-        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_csv' 1 %}" role="button"><i
-                class="bi bi-download"></i></i>
-            Скачать результаты 1 тура (CSV)</a>
+        <a class="btn btn-success btn-lg btn-block" href="{% url 'get_results' 1 %}" role="button"><i
+                class="bi bi-arrow-right-square"></i></i>
+            Результаты 1 тура</a>
 {% endif %}
 {% if olimp2_finished %}
         <a class="btn btn-success btn-lg btn-block" href="{% url 'get_results' 2 %}" role="button"><i

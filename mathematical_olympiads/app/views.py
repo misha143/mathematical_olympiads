@@ -1,6 +1,7 @@
 import math
 
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import get_user_model
@@ -201,11 +202,8 @@ def task_view(request, pk_olympiad, pk_task):
         # все задания олимпиады
         all_tasks = Task.objects.filter(olympiad=olympiad).order_by("pk")
 
-        # задания олимпиады на которые ответил человек
-        answered_tasks = []
-        for t in all_tasks:
-            if Answer.objects.filter(user=user, task=t).exists():
-                answered_tasks.append(t)
+        # Задания олимпиады на которые ответил человек
+        answered_tasks = all_tasks.filter(answer__user=user)
 
         # пробуем найти существующий ответ
         answer = Answer.objects.filter(user=user, task=task).first()
@@ -241,7 +239,7 @@ def task_view2(request, pk_olympiad, pk_task):
         ans = Answer.objects.filter(user=user, task=task).first()
         # если нашли, то ставим новый ответ
         if ans:
-            if ans.attempt_number == 1:
+            if ans.attempt_number < olympiad.number_of_attempts:
                 ans.answer = float(request.POST['user_input_number'])
                 ans.is_correct = task.correct_answer == ans.answer
                 ans.answer_created = timezone.now()
@@ -275,16 +273,13 @@ def task_view2(request, pk_olympiad, pk_task):
         # все задания олимпиады
         all_tasks = Task.objects.filter(olympiad=olympiad).order_by("pk")
 
-        # задания олимпиады на которые ответил человек
-        answered_tasks = []
-        for t in all_tasks:
-            if Answer.objects.filter(user=user, task=t).exists():
-                answered_tasks.append(t)
-        # задания олимпиады на которые ответил человек правильно
-        answered_tasks_correct = []
-        for t in all_tasks:
-            if Answer.objects.filter(user=user, task=t, is_correct=True).exists():
-                answered_tasks_correct.append(t)
+        # Задания олимпиады на которые ответил человек
+        answered_tasks = all_tasks.filter(answer__user=user)
+
+        # Задания олимпиады на которые ответил человек правильно
+        answered_tasks_correct = all_tasks.filter(
+            Q(answer__user=user) & Q(answer__is_correct=True)
+        )
 
         # пробуем найти существующий ответ
         answer = Answer.objects.filter(user=user, task=task).first()
@@ -313,65 +308,11 @@ def olympiad_early_completion(request, pk_olympiad):
     return redirect('index')
 
 
-@login_required
-def get_csv(request, pk_olympiad):
-    if request.user.is_staff:
-        now = datetime.now().strftime("%d.%m.%Y_%H.%M.%S")
-
-        olympiad = get_object_or_404(Olympiad, olympiad_level=pk_olympiad)
-        response = None
-
-        if pk_olympiad == 1:
-            response = HttpResponse(
-                content_type='text/csv',
-                headers={'Content-Disposition': f'attachment; filename="Results_1_tour_{now}.csv"'},
-            )
-        elif pk_olympiad == 2:
-            response = HttpResponse(
-                content_type='text/csv',
-                headers={'Content-Disposition': f'attachment; filename="Results_2_osnovnoy_tour_{now}.csv"'},
-            )
-        else:
-            response = HttpResponse(
-                content_type='text/csv',
-                headers={'Content-Disposition': f'attachment; filename="Results_2_povisheniy_tour_{now}.csv"'},
-            )
-
-        writer = csv.writer(response)
-
-        # все задания олимпиады
-        all_tasks = Task.objects.filter(olympiad=olympiad)
-
-        all_answers = Answer.objects.filter(task__in=all_tasks)
-
-        unique_users = set()
-
-        for a in all_answers:
-            unique_users.add(a.user)
-
-        writer.writerow(
-            ['Олимпиада', 'Тур олимпиады', 'Название команды', 'Сколько секунд потратили на решение',
-             'Сколько баллов заработали',
-             'Всего баллов в олимпиаде', '% правильно решённых заданий'])
-        for u in unique_users:
-            _sec_for_solve = Timetrack.objects.filter(olympiad=olympiad, user=u).first()
-            _number_of_points_scored = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
-
-            writer.writerow(
-                [olympiad, olympiad.display_olympiad_level(), u.first_name, str(_sec_for_solve),
-                 _number_of_points_scored,
-                 len(all_tasks),
-                 int(round(_number_of_points_scored / len(all_tasks), 2) * 100)])
-
-        return response
-    else:
-        return HttpResponseNotFound("Экспорт данных может делать только администратор")
-
 
 @login_required
-def get_results(request, pk_olympiad):
+def get_results(request, olympiad_level):
     if request.user.is_staff:
-        olympiad = get_object_or_404(Olympiad, olympiad_level=pk_olympiad)
+        olympiad = get_object_or_404(Olympiad, olympiad_level=olympiad_level)
 
         # все задания олимпиады
         all_tasks = Task.objects.filter(olympiad=olympiad)
@@ -393,14 +334,24 @@ def get_results(request, pk_olympiad):
         for u in unique_users:
             _sec_for_solve = Timetrack.objects.filter(olympiad=olympiad, user=u).first()
             _count_task_solved_coorect = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
-            _total_points = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True,
-                                                  attempt_number=1).count() * 2 + Answer.objects.filter(
-                task__in=all_tasks, user=u, is_correct=True, attempt_number=2).count()
+
+            if olympiad.olympiad_level == '1':
+                _total_points = Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True).count()
+                _total_points_in_olympiad = len(all_tasks)
+            else:
+
+                _total_points = 0
+                for attempt_number in range(1, olympiad.number_of_attempts + 1):
+                    _total_points += Answer.objects.filter(task__in=all_tasks, user=u, is_correct=True,
+                                                           attempt_number=attempt_number).count() * (
+                                             olympiad.number_of_attempts + 1 - attempt_number)
+
+                _total_points_in_olympiad = len(all_tasks) * olympiad.number_of_attempts
 
             total_array.append(
                 [olympiad, olympiad.display_olympiad_level(), u.first_name, int(str(_sec_for_solve)),
                  _total_points,
-                 len(all_tasks) * 2,
+                 _total_points_in_olympiad,
                  int(round(_count_task_solved_coorect / len(all_tasks), 2) * 100)])
 
         total_array.sort(key=lambda x: (-x[4], x[3]))
