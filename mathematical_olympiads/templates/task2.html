@@ -17,7 +17,7 @@
 
 
                     <form
-                            {% if answer.attempt_number != 2 and is_open_task_50_percent_rule %}
+                            {% if answer.attempt_number != olympiad.number_of_attempts and is_open_task_50_percent_rule %}
                         action="{% url 'task2' olympiad.pk task.pk %}" method="post"
                         {% endif %}
                     >
@@ -43,7 +43,7 @@
                                    value="{{ answer.answer|floatformat }}"
                                     {% endif %}
 
-                                   {% if answer.attempt_number == 2 or not is_open_task_50_percent_rule %}
+                                   {% if answer.attempt_number == olympiad.number_of_attempts or not is_open_task_50_percent_rule %}
                         disabled
                         {% endif %}
 
@@ -55,13 +55,10 @@
 
                         <p>Использовано попыток:
                         {% if not answer %}
-                        0/2
-                        {% endif %}
-                        {% if answer.attempt_number == 1 %}
-                        1/2
-                        {% endif %}
-                        {% if answer.attempt_number == 2 %}
-                        2/2
+                        0/{{ olympiad.number_of_attempts }}
+
+                        {% else %}
+                        {{answer.attempt_number}}/{{ olympiad.number_of_attempts }}
                         {% endif %}
                         </p>
 
@@ -71,14 +68,14 @@
                         {% endif %}
 
 <!--   можно отправить ответ-->
-                        {% if answer.attempt_number != 2 and is_open_task_50_percent_rule %}
+                        {% if answer.attempt_number != olympiad.number_of_attempts and is_open_task_50_percent_rule %}
                         <button type="submit" class="btn btn-outline-primary">Отправить</button>
                         {% endif %}
 
 
 
 <!--   нельзя отправить ответ-->
-                        {% if answer.attempt_number == 2 or not is_open_task_50_percent_rule %}
+                        {% if answer.attempt_number == olympiad.number_of_attempts or not is_open_task_50_percent_rule %}
                         <button class="btn btn-outline-secondary" disabled>Отправить</button>
                         {% endif %}
 
